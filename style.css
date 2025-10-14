@@ -428,6 +428,12 @@ html, body {
 
 .sk h2 { padding-top: 10px;}
 
+.rightheader {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #000;}
+
 
 
 
