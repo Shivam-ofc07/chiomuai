@@ -422,11 +422,7 @@ html, body {
   z-index: 1000;
   background: #000;
 }
-.left {
-  position: sticky;
-  left: 0;
-  z-index: 1000;
-  background: #000;
-}
+
+
 
 
