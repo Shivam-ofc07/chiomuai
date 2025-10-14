@@ -400,6 +400,22 @@ html, body {
 .chatarea {
   overflow-y: auto; /* ✅ Only chat messages scroll */
   flex: 1;
-}
+}
+/* ================= MOBILE INPUT VISIBILITY FIX ================= */
+.rightfooter {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: env(safe-area-inset-bottom); /* ✅ Fixes Android navbar overlap */
+  z-index: 1000;
+}
+
+/* Make sure chat area doesn't hide behind footer */
+.chatarea {
+  padding-bottom: 100px; /* equal or slightly more than .rightfooter height */
+}
+
+
 
 
