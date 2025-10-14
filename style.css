@@ -394,19 +394,12 @@ background: linear-gradient(270deg, #00d4ff, #007bff, #6f00ff);
 }
 html, body {
   height: 100%;
-  overflow: hidden; /* 🛑 Stop whole-page scroll */
+  
 }
 
 .chatarea {
   overflow-y: auto; /* ✅ Only chat messages scroll */
   flex: 1;
-}
-#welcomeText {
-  text-align: center;
-  color: #aaa;
-  font-size: 18px;
-  margin-top: 40px;
-  opacity: 0.8;
-}
+}
 
 
