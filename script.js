@@ -7,8 +7,7 @@ const chatsList = document.getElementById("chatsList");
 const newChatBtn = document.getElementById("newChatBtn");
 
 let backendConnected = false;
-let backendURL = "https://5d09cd96e8f02fff2a78d0cacfaa07a1.serveo.net
-";  // 👈 apna Serveo URL daal (https://abc123.serveo.net)
+let backendURL = "https://5d09cd96e8f02fff2a78d0cacfaa07a1.serveo.net";  // 👈 apna Serveo URL daal (https://abc123.serveo.net)
 let chats = JSON.parse(localStorage.getItem("sparkmind_chats")) || {};
 let activeChat = localStorage.getItem("sparkmind_active") || null;
 
@@ -157,4 +156,5 @@ newChatBtn.onclick = createChat;
 
 // Initially assume online (you can ping to verify)
 setBackendStatus(true);
+
 
