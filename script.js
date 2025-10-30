@@ -103,14 +103,18 @@ function handleSend() {
   const thinkingMsg = addMessage("Thinking... 🤔", "bot");
 
   // ============= CALL BACKEND =============
-  fetch(`${backendURL}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text,
-      history: chats[activeChat] || [],
-    }),
-  })
+// Sirf last 5 messages backend ko bhejna
+const chatHistory = (chats[activeChat] || []).slice(-5);
+
+fetch(`${backendURL}/api/chat`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    text,
+    history: chatHistory,
+  }),
+})
+
     .then((res) => res.json())
     .then((data) => {
       const replyText = data.response || "⚠️ Empty response.";
@@ -157,6 +161,7 @@ newChatBtn.onclick = createChat;
 
 // Initially assume online (you can ping to verify)
 setBackendStatus(true);
+
 
 
 
