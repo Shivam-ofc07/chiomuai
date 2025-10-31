@@ -111,8 +111,7 @@ background: linear-gradient(270deg, #00d4ff, #007bff, #6f00ff);
 
 /* Square menu button */
 .menu-btn {
-  background: transparent;
-  border: 1px solid #444;
+  background: transparent;
   cursor: pointer;
   display: flex;
   flex-direction: column;
