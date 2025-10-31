@@ -113,6 +113,7 @@ background: linear-gradient(270deg, #00d4ff, #007bff, #6f00ff);
 .menu-btn {
   background: transparent;
   cursor: pointer;
+  border: 2px solid black;
   display: flex;
   flex-direction: column;
   justify-content: center;
