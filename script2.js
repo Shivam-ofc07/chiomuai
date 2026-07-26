@@ -6,16 +6,12 @@ const chatArea = document.getElementById("chatArea");
 const chatsList = document.getElementById("chatsList");
 const newChatBtn = document.getElementById("newChatBtn");
 
-// =====================================================
-// CONFIG
-// =====================================================
+
+// ======================================================
+// BOTMEN AI BACKEND
+// ======================================================
 
 const backendURL = "https://shivam23445-botmen-ai.hf.space";
-
-// Important:
-// app.py has: api_name="chat"
-// Therefore endpoint is /chat
-const API_ENDPOINT = `${backendURL}/gradio_api/call/chat`;
 
 let backendConnected = true;
 
@@ -26,16 +22,14 @@ let activeChat =
   localStorage.getItem("sparkmind_active") || null;
 
 
-// =====================================================
+// ======================================================
 // MENU TOGGLE
-// =====================================================
+// ======================================================
 
 menuBtn.addEventListener("click", (e) => {
-
   e.stopPropagation();
 
   leftPanel.classList.toggle("collapsed");
-
 });
 
 
@@ -55,9 +49,9 @@ document.addEventListener("click", (e) => {
 });
 
 
-// =====================================================
-// CHAT HANDLING
-// =====================================================
+// ======================================================
+// CHAT LIST
+// ======================================================
 
 function renderChats() {
 
@@ -99,6 +93,10 @@ function renderChats() {
 }
 
 
+// ======================================================
+// CREATE NEW CHAT
+// ======================================================
+
 function createChat() {
 
   const newName =
@@ -117,6 +115,10 @@ function createChat() {
 }
 
 
+// ======================================================
+// SAVE CHATS
+// ======================================================
+
 function saveChats() {
 
   localStorage.setItem(
@@ -131,6 +133,10 @@ function saveChats() {
 
 }
 
+
+// ======================================================
+// LOAD CHAT
+// ======================================================
 
 function loadChatMessages() {
 
@@ -156,9 +162,9 @@ function loadChatMessages() {
 }
 
 
-// =====================================================
-// MESSAGE FUNCTIONS
-// =====================================================
+// ======================================================
+// ADD MESSAGE
+// ======================================================
 
 function addMessage(
   text,
@@ -178,7 +184,8 @@ function addMessage(
   bubble.className =
     "bubble";
 
-  // textContent prevents HTML injection
+  // textContent use kiya hai
+  // taaki model ka text safe rahe
   bubble.textContent = text;
 
   msg.appendChild(bubble);
@@ -211,171 +218,9 @@ function addMessage(
 }
 
 
-// =====================================================
-// GRADIO API REQUEST
-// =====================================================
-
-async function callBotmen(
-  userText,
-  history
-) {
-
-  // -------------------------------------------------
-  // STEP 1: SUBMIT REQUEST
-  // -------------------------------------------------
-
-  const submitResponse =
-    await fetch(API_ENDPOINT, {
-
-      method: "POST",
-
-      headers: {
-
-        "Content-Type":
-          "application/json"
-
-      },
-
-      body: JSON.stringify({
-
-        data: [
-
-          userText,
-
-          history
-
-        ]
-
-      })
-
-    });
-
-
-  if (!submitResponse.ok) {
-
-    throw new Error(
-      `Submit failed: ${submitResponse.status}`
-    );
-
-  }
-
-
-  const submitData =
-    await submitResponse.json();
-
-
-  const eventId =
-    submitData.event_id;
-
-
-  if (!eventId) {
-
-    throw new Error(
-      "No event_id returned by Gradio"
-    );
-
-  }
-
-
-  // -------------------------------------------------
-  // STEP 2: WAIT FOR RESULT
-  // -------------------------------------------------
-
-  const resultURL =
-    `${API_ENDPOINT}/${eventId}`;
-
-
-  const resultResponse =
-    await fetch(resultURL);
-
-
-  if (!resultResponse.ok) {
-
-    throw new Error(
-      `Result failed: ${resultResponse.status}`
-    );
-
-  }
-
-
-  const resultText =
-    await resultResponse.text();
-
-
-  // -------------------------------------------------
-  // SSE RESPONSE PARSING
-  // -------------------------------------------------
-
-  const lines =
-    resultText.split("\n");
-
-
-  for (
-    let i = 0;
-    i < lines.length;
-    i++
-  ) {
-
-    const line =
-      lines[i].trim();
-
-
-    if (
-      line === "event: complete" &&
-      lines[i + 1]
-    ) {
-
-      const dataLine =
-        lines[i + 1];
-
-
-      if (
-        dataLine.startsWith("data:")
-      ) {
-
-        const jsonText =
-          dataLine
-            .replace("data:", "")
-            .trim();
-
-
-        const data =
-          JSON.parse(jsonText);
-
-
-        // Gradio output:
-        // ["BOTMEN response"]
-
-        return data[0];
-
-      }
-
-    }
-
-
-    if (
-      line === "event: error"
-    ) {
-
-      throw new Error(
-        "BOTMEN generation error"
-      );
-
-    }
-
-  }
-
-
-  throw new Error(
-    "No completed response received"
-  );
-
-}
-
-
-// =====================================================
+// ======================================================
 // SEND MESSAGE
-// =====================================================
+// ======================================================
 
 async function handleSend() {
 
@@ -393,7 +238,7 @@ async function handleSend() {
   if (!backendConnected) {
 
     alert(
-      "⚠️ BOTMEN is offline!"
+      "⚠️ BOTMEN server offline hai."
     );
 
     return;
@@ -401,8 +246,7 @@ async function handleSend() {
   }
 
 
-  // Create chat if none exists
-
+  // Chat nahi hai to naya chat
   if (!activeChat) {
 
     createChat();
@@ -410,8 +254,7 @@ async function handleSend() {
   }
 
 
-  // Add user message
-
+  // User message
   addMessage(
     text,
     "user"
@@ -422,7 +265,6 @@ async function handleSend() {
 
 
   // Thinking message
-
   const thinkingMsg =
     addMessage(
       "Thinking... 🤔",
@@ -433,60 +275,227 @@ async function handleSend() {
   try {
 
 
-    // ---------------------------------------------
-    // HISTORY CONVERSION
-    // ---------------------------------------------
-
-    const chatArr =
-      chats[activeChat] || [];
-
-
-    // Remove current thinking message
-    // from history
-
-    const previousMessages =
-      chatArr
-        .slice(0, -1)
-        .slice(-10);
-
+    // ==================================================
+    // HISTORY PREPARE
+    // ==================================================
 
     const history =
-      previousMessages.map((m) => {
+      (chats[activeChat] || [])
 
-        return {
+        .filter((message) => {
 
-          role:
-            m.sender === "user"
-              ? "user"
-              : "assistant",
+          return (
+            message.text !==
+            "Thinking... 🤔"
+          );
 
-          content:
-            m.text
+        })
 
-        };
+        .slice(-10)
 
-      });
+        .map((message) => {
+
+          if (
+            message.sender === "user"
+          ) {
+
+            return {
+
+              role: "user",
+
+              content: message.text
+
+            };
+
+          }
 
 
-    // ---------------------------------------------
-    // CALL BOTMEN
-    // ---------------------------------------------
+          return {
 
-    const reply =
-      await callBotmen(
-        text,
-        history
+            role: "assistant",
+
+            content: message.text
+
+          };
+
+        });
+
+
+    // ==================================================
+    // STEP 1: CREATE GRADIO EVENT
+    // ==================================================
+
+    const callResponse =
+      await fetch(
+
+        `${backendURL}/gradio_api/call/chat`,
+
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            data: [
+
+              text,
+
+              history
+
+            ]
+
+          })
+
+        }
+
       );
 
 
-    const replyText =
-      reply ||
-      "⚠️ BOTMEN returned an empty response.";
+    if (!callResponse.ok) {
+
+      throw new Error(
+        `Gradio call failed: ${callResponse.status}`
+      );
+
+    }
 
 
-    // ---------------------------------------------
-    // UPDATE UI
-    // ---------------------------------------------
+    const callData =
+      await callResponse.json();
+
+
+    const eventId =
+      callData.event_id;
+
+
+    if (!eventId) {
+
+      throw new Error(
+        "No event_id received from Gradio"
+      );
+
+    }
+
+
+    // ==================================================
+    // STEP 2: READ RESULT FROM SSE
+    // ==================================================
+
+    const resultResponse =
+      await fetch(
+
+        `${backendURL}/gradio_api/call/chat/${eventId}`
+
+      );
+
+
+    if (!resultResponse.ok) {
+
+      throw new Error(
+        `Gradio result failed: ${resultResponse.status}`
+      );
+
+    }
+
+
+    const resultText =
+      await resultResponse.text();
+
+
+    console.log(
+      "BOTMEN RAW RESPONSE:",
+      resultText
+    );
+
+
+    // ==================================================
+    // RESPONSE PARSE
+    // ==================================================
+
+    let replyText = "";
+
+
+    // Gradio SSE mein "data:" line hoti hai
+    const dataLines =
+      resultText
+
+        .split("\n")
+
+        .filter((line) => {
+
+          return line.startsWith("data:");
+
+        });
+
+
+    if (dataLines.length > 0) {
+
+
+      const lastData =
+        dataLines[dataLines.length - 1]
+
+          .replace(
+            "data:",
+            ""
+          )
+
+          .trim();
+
+
+      try {
+
+        const parsed =
+          JSON.parse(lastData);
+
+
+        // Output textbox ka result
+        if (
+          Array.isArray(parsed)
+        ) {
+
+          replyText =
+            parsed[0];
+
+        } else {
+
+          replyText =
+            parsed;
+
+        }
+
+      }
+
+      catch (parseError) {
+
+        replyText =
+          lastData;
+
+      }
+
+    }
+
+
+    if (
+      !replyText ||
+      typeof replyText !== "string"
+    ) {
+
+      replyText =
+        "⚠️ BOTMEN ne empty response diya.";
+
+    }
+
+
+    // ==================================================
+    // THINKING KO ACTUAL RESPONSE SE REPLACE KARO
+    // ==================================================
 
     thinkingMsg
       .querySelector(".bubble")
@@ -494,24 +503,27 @@ async function handleSend() {
       replyText;
 
 
-    // ---------------------------------------------
-    // UPDATE LOCAL STORAGE
-    // ---------------------------------------------
-
-    const currentChat =
+    const chatArr =
       chats[activeChat];
 
 
     const lastIndex =
-      currentChat.length - 1;
+      chatArr.length - 1;
 
 
     if (
-      currentChat[lastIndex] &&
-      currentChat[lastIndex].sender === "bot"
+
+      chatArr[lastIndex] &&
+
+      chatArr[lastIndex].sender ===
+      "bot" &&
+
+      chatArr[lastIndex].text
+        .startsWith("Thinking")
+
     ) {
 
-      currentChat[lastIndex].text =
+      chatArr[lastIndex].text =
         replyText;
 
       saveChats();
@@ -519,39 +531,50 @@ async function handleSend() {
     }
 
 
-  } catch (error) {
+    chatArea.scrollTop =
+      chatArea.scrollHeight;
+
+
+  }
+
+  catch (error) {
+
 
     console.error(
-      "BOTMEN ERROR:",
+      "❌ BOTMEN ERROR:",
       error
     );
-
-
-    const errorMessage =
-      "⚠️ BOTMEN server error. Thoda wait karke dobara try karo.";
 
 
     thinkingMsg
       .querySelector(".bubble")
       .textContent =
-      errorMessage;
+      "⚠️ BOTMEN server error. Thoda wait karke dobara try karo.";
 
 
-    const currentChat =
+    // Error par Thinking ko error se replace
+    const chatArr =
       chats[activeChat];
 
 
     const lastIndex =
-      currentChat.length - 1;
+      chatArr.length - 1;
 
 
     if (
-      currentChat[lastIndex] &&
-      currentChat[lastIndex].sender === "bot"
+
+      chatArr[lastIndex] &&
+
+      chatArr[lastIndex].sender ===
+      "bot" &&
+
+      chatArr[lastIndex].text
+        .startsWith("Thinking")
+
     ) {
 
-      currentChat[lastIndex].text =
-        errorMessage;
+      chatArr[lastIndex].text =
+        "⚠️ BOTMEN server error.";
 
       saveChats();
 
@@ -562,9 +585,9 @@ async function handleSend() {
 }
 
 
-// =====================================================
-// BUTTONS
-// =====================================================
+// ======================================================
+// BUTTON + ENTER
+// ======================================================
 
 sendBtn.onclick =
   handleSend;
@@ -586,12 +609,13 @@ inputEl.addEventListener(
     }
 
   }
+
 );
 
 
-// =====================================================
+// ======================================================
 // BACKEND STATUS
-// =====================================================
+// ======================================================
 
 function setBackendStatus(status) {
 
@@ -609,15 +633,17 @@ function setBackendStatus(status) {
 
   inputEl.placeholder =
     status
+
       ? "Ask whatever you want..."
+
       : "BOTMEN offline ⚠️";
 
 }
 
 
-// =====================================================
-// INIT
-// =====================================================
+// ======================================================
+// INITIALIZE
+// ======================================================
 
 renderChats();
 
@@ -633,6 +659,4 @@ newChatBtn.onclick =
   createChat;
 
 
-setBackendStatus(
-  true
-);
+setBackendStatus(true);
