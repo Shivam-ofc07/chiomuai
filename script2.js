@@ -8,103 +8,154 @@ const newChatBtn = document.getElementById("newChatBtn");
 
 
 // ======================================================
-// BOTMEN AI BACKEND
+// BOTMEN AI HUGGING FACE SPACE
 // ======================================================
 
-const backendURL = "https://shivam23445-botmen-ai.hf.space";
+const backendURL =
+  "https://shivam23445-botmen-ai.hf.space";
 
-let backendConnected = true;
+
+// ======================================================
+// LOCAL CHAT DATA
+// ======================================================
 
 let chats =
-  JSON.parse(localStorage.getItem("sparkmind_chats")) || {};
+  JSON.parse(
+    localStorage.getItem("sparkmind_chats")
+  ) || {};
 
 let activeChat =
-  localStorage.getItem("sparkmind_active") || null;
+  localStorage.getItem(
+    "sparkmind_active"
+  ) || null;
 
 
 // ======================================================
-// MENU TOGGLE
+// MENU
 // ======================================================
 
-menuBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
+menuBtn.addEventListener(
+  "click",
+  function (e) {
 
-  leftPanel.classList.toggle("collapsed");
-});
+    e.stopPropagation();
 
-
-document.addEventListener("click", (e) => {
-
-  if (
-    window.innerWidth <= 900 &&
-    !leftPanel.classList.contains("collapsed") &&
-    !leftPanel.contains(e.target) &&
-    !menuBtn.contains(e.target)
-  ) {
-
-    leftPanel.classList.add("collapsed");
+    leftPanel.classList.toggle(
+      "collapsed"
+    );
 
   }
+);
 
-});
+
+document.addEventListener(
+  "click",
+  function (e) {
+
+    if (
+
+      window.innerWidth <= 900 &&
+
+      !leftPanel.classList.contains(
+        "collapsed"
+      ) &&
+
+      !leftPanel.contains(e.target) &&
+
+      !menuBtn.contains(e.target)
+
+    ) {
+
+      leftPanel.classList.add(
+        "collapsed"
+      );
+
+    }
+
+  }
+);
 
 
 // ======================================================
-// CHAT LIST
+// RENDER CHATS
 // ======================================================
 
 function renderChats() {
 
   chatsList.innerHTML = "";
 
-  Object.keys(chats).forEach((name) => {
+  Object.keys(chats).forEach(
+    function (name) {
 
-    const div = document.createElement("div");
+      const div =
+        document.createElement(
+          "div"
+        );
 
-    div.className = "chat-item";
+      div.className =
+        "chat-item";
 
-    div.textContent = name;
+      div.textContent =
+        name;
 
-    if (name === activeChat) {
 
-      div.classList.add("active");
+      if (
+        name === activeChat
+      ) {
 
-    }
+        div.classList.add(
+          "active"
+        );
 
-    div.onclick = () => {
+      }
 
-      activeChat = name;
 
-      localStorage.setItem(
-        "sparkmind_active",
-        activeChat
+      div.onclick =
+        function () {
+
+          activeChat =
+            name;
+
+          localStorage.setItem(
+            "sparkmind_active",
+            activeChat
+          );
+
+          renderChats();
+
+          loadChatMessages();
+
+        };
+
+
+      chatsList.appendChild(
+        div
       );
 
-      renderChats();
-
-      loadChatMessages();
-
-    };
-
-    chatsList.appendChild(div);
-
-  });
+    }
+  );
 
 }
 
 
 // ======================================================
-// CREATE NEW CHAT
+// CREATE CHAT
 // ======================================================
 
 function createChat() {
 
   const newName =
-    `Chat ${Object.keys(chats).length + 1}`;
+    "Chat " +
+    (Object.keys(chats).length + 1);
 
-  chats[newName] = [];
 
-  activeChat = newName;
+  chats[newName] =
+    [];
+
+
+  activeChat =
+    newName;
+
 
   saveChats();
 
@@ -116,7 +167,7 @@ function createChat() {
 
 
 // ======================================================
-// SAVE CHATS
+// SAVE CHAT
 // ======================================================
 
 function saveChats() {
@@ -125,6 +176,7 @@ function saveChats() {
     "sparkmind_chats",
     JSON.stringify(chats)
   );
+
 
   localStorage.setItem(
     "sparkmind_active",
@@ -140,22 +192,29 @@ function saveChats() {
 
 function loadChatMessages() {
 
-  chatArea.innerHTML = "";
+  chatArea.innerHTML =
+    "";
+
 
   if (
+
     activeChat &&
+
     chats[activeChat]
+
   ) {
 
-    chats[activeChat].forEach((m) => {
+    chats[activeChat].forEach(
+      function (message) {
 
-      addMessage(
-        m.text,
-        m.sender,
-        false
-      );
+        addMessage(
+          message.text,
+          message.sender,
+          false
+        );
 
-    });
+      }
+    );
 
   }
 
@@ -168,37 +227,55 @@ function loadChatMessages() {
 
 function addMessage(
   text,
-  sender = "bot",
+  sender,
   save = true
 ) {
 
-  const msg =
-    document.createElement("div");
+  const message =
+    document.createElement(
+      "div"
+    );
 
-  msg.className =
-    `message ${sender}`;
+
+  message.className =
+    "message " +
+    sender;
+
 
   const bubble =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   bubble.className =
     "bubble";
 
-  // textContent use kiya hai
-  // taaki model ka text safe rahe
-  bubble.textContent = text;
 
-  msg.appendChild(bubble);
+  bubble.textContent =
+    text;
 
-  chatArea.appendChild(msg);
+
+  message.appendChild(
+    bubble
+  );
+
+
+  chatArea.appendChild(
+    message
+  );
+
 
   chatArea.scrollTop =
     chatArea.scrollHeight;
 
 
   if (
+
     save &&
+
     activeChat
+
   ) {
 
     chats[activeChat].push({
@@ -209,11 +286,13 @@ function addMessage(
 
     });
 
+
     saveChats();
 
   }
 
-  return msg;
+
+  return message;
 
 }
 
@@ -235,18 +314,6 @@ async function handleSend() {
   }
 
 
-  if (!backendConnected) {
-
-    alert(
-      "⚠️ BOTMEN server offline hai."
-    );
-
-    return;
-
-  }
-
-
-  // Chat nahi hai to naya chat
   if (!activeChat) {
 
     createChat();
@@ -254,18 +321,19 @@ async function handleSend() {
   }
 
 
-  // User message
+  // USER MESSAGE
   addMessage(
     text,
     "user"
   );
 
 
-  inputEl.value = "";
+  inputEl.value =
+    "";
 
 
-  // Thinking message
-  const thinkingMsg =
+  // THINKING MESSAGE
+  const thinkingMessage =
     addMessage(
       "Thinking... 🤔",
       "bot"
@@ -275,64 +343,64 @@ async function handleSend() {
   try {
 
 
-    // ==================================================
-    // HISTORY PREPARE
-    // ==================================================
+    // ==========================================
+    // HISTORY
+    // ==========================================
 
     const history =
-      (chats[activeChat] || [])
+      chats[activeChat]
 
-        .filter((message) => {
+        .filter(
+          function (message) {
 
-          return (
-            message.text !==
-            "Thinking... 🤔"
-          );
+            return (
 
-        })
+              message.text !==
+              "Thinking... 🤔"
+
+            );
+
+          }
+        )
 
         .slice(-10)
 
-        .map((message) => {
-
-          if (
-            message.sender === "user"
-          ) {
+        .map(
+          function (message) {
 
             return {
 
-              role: "user",
+              role:
+                message.sender ===
+                "user"
 
-              content: message.text
+                  ? "user"
+
+                  : "assistant",
+
+              content:
+                message.text
 
             };
 
           }
+        );
 
 
-          return {
+    // ==========================================
+    // STEP 1
+    // ==========================================
 
-            role: "assistant",
-
-            content: message.text
-
-          };
-
-        });
-
-
-    // ==================================================
-    // STEP 1: CREATE GRADIO EVENT
-    // ==================================================
-
-    const callResponse =
+    const startResponse =
       await fetch(
 
-        `${backendURL}/gradio_api/call/chat`,
+        backendURL +
+        "/gradio_api/call/chat",
 
         {
 
-          method: "POST",
+          method:
+            "POST",
 
           headers: {
 
@@ -341,65 +409,74 @@ async function handleSend() {
 
           },
 
-          body: JSON.stringify({
+          body:
+            JSON.stringify({
 
-            data: [
+              data: [
 
-              text,
+                text,
 
-              history
+                history
 
-            ]
+              ]
 
-          })
+            })
 
         }
 
       );
 
 
-    if (!callResponse.ok) {
+    if (
+      !startResponse.ok
+    ) {
 
       throw new Error(
-        `Gradio call failed: ${callResponse.status}`
+        "API call failed"
       );
 
     }
 
 
-    const callData =
-      await callResponse.json();
+    const startData =
+      await startResponse.json();
 
 
     const eventId =
-      callData.event_id;
+      startData.event_id;
 
 
     if (!eventId) {
 
       throw new Error(
-        "No event_id received from Gradio"
+        "Event ID nahi mila"
       );
 
     }
 
 
-    // ==================================================
-    // STEP 2: READ RESULT FROM SSE
-    // ==================================================
+    // ==========================================
+    // STEP 2
+    // ==========================================
 
     const resultResponse =
       await fetch(
 
-        `${backendURL}/gradio_api/call/chat/${eventId}`
+        backendURL +
+
+        "/gradio_api/call/chat/" +
+
+        eventId
 
       );
 
 
-    if (!resultResponse.ok) {
+    if (
+      !resultResponse.ok
+    ) {
 
       throw new Error(
-        `Gradio result failed: ${resultResponse.status}`
+        "Result nahi mila"
       );
 
     }
@@ -409,122 +486,144 @@ async function handleSend() {
       await resultResponse.text();
 
 
-    console.log(
-      "BOTMEN RAW RESPONSE:",
-      resultText
-    );
+    // ==========================================
+    // GRADIO RESPONSE PARSE
+    // ==========================================
+
+    let reply =
+      "";
 
 
-    // ==================================================
-    // RESPONSE PARSE
-    // ==================================================
-
-    let replyText = "";
-
-
-    // Gradio SSE mein "data:" line hoti hai
-    const dataLines =
-      resultText
-
-        .split("\n")
-
-        .filter((line) => {
-
-          return line.startsWith("data:");
-
-        });
+    const lines =
+      resultText.split(
+        "\n"
+      );
 
 
-    if (dataLines.length > 0) {
+    for (
+      let i = 0;
+      i < lines.length;
+      i++
+    ) {
 
 
-      const lastData =
-        dataLines[dataLines.length - 1]
-
-          .replace(
-            "data:",
-            ""
-          )
-
-          .trim();
+      const line =
+        lines[i];
 
 
-      try {
+      if (
+        line.startsWith(
+          "data:"
+        )
+      ) {
 
-        const parsed =
-          JSON.parse(lastData);
+
+        const jsonString =
+          line.substring(
+            5
+          ).trim();
 
 
-        // Output textbox ka result
         if (
-          Array.isArray(parsed)
+          !jsonString
         ) {
 
-          replyText =
-            parsed[0];
+          continue;
 
-        } else {
+        }
 
-          replyText =
-            parsed;
+
+        try {
+
+
+          const data =
+            JSON.parse(
+              jsonString
+            );
+
+
+          if (
+
+            Array.isArray(
+              data
+            ) &&
+
+            data.length > 0
+
+          ) {
+
+            reply =
+              data[0];
+
+          }
+
+        }
+
+        catch (
+          error
+        ) {
+
+          console.log(
+            "Parse error:",
+            error
+          );
 
         }
 
       }
 
-      catch (parseError) {
-
-        replyText =
-          lastData;
-
-      }
-
     }
 
 
     if (
-      !replyText ||
-      typeof replyText !== "string"
+      !reply
     ) {
 
-      replyText =
-        "⚠️ BOTMEN ne empty response diya.";
+      throw new Error(
+        "Empty response"
+      );
 
     }
 
 
-    // ==================================================
-    // THINKING KO ACTUAL RESPONSE SE REPLACE KARO
-    // ==================================================
+    // ==========================================
+    // SHOW RESPONSE
+    // ==========================================
 
-    thinkingMsg
-      .querySelector(".bubble")
+    thinkingMessage
+
+      .querySelector(
+        ".bubble"
+      )
+
       .textContent =
-      replyText;
+      reply;
 
 
-    const chatArr =
+    // ==========================================
+    // SAVE RESPONSE
+    // ==========================================
+
+    const chatArray =
       chats[activeChat];
 
 
     const lastIndex =
-      chatArr.length - 1;
+      chatArray.length - 1;
 
 
     if (
 
-      chatArr[lastIndex] &&
+      chatArray[lastIndex] &&
 
-      chatArr[lastIndex].sender ===
-      "bot" &&
-
-      chatArr[lastIndex].text
-        .startsWith("Thinking")
+      chatArray[lastIndex].sender ===
+      "bot"
 
     ) {
 
-      chatArr[lastIndex].text =
-        replyText;
+      chatArray[lastIndex].text =
+        reply;
+
 
       saveChats();
 
@@ -537,48 +636,26 @@ async function handleSend() {
 
   }
 
-  catch (error) {
+  catch (
+    error
+  ) {
 
 
     console.error(
-      "❌ BOTMEN ERROR:",
+      "BOTMEN ERROR:",
       error
     );
 
 
-    thinkingMsg
-      .querySelector(".bubble")
+    thinkingMessage
+
+      .querySelector(
+        ".bubble"
+      )
+
       .textContent =
       "⚠️ BOTMEN server error. Thoda wait karke dobara try karo.";
 
-
-    // Error par Thinking ko error se replace
-    const chatArr =
-      chats[activeChat];
-
-
-    const lastIndex =
-      chatArr.length - 1;
-
-
-    if (
-
-      chatArr[lastIndex] &&
-
-      chatArr[lastIndex].sender ===
-      "bot" &&
-
-      chatArr[lastIndex].text
-        .startsWith("Thinking")
-
-    ) {
-
-      chatArr[lastIndex].text =
-        "⚠️ BOTMEN server error.";
-
-      saveChats();
-
-    }
 
   }
 
@@ -586,20 +663,25 @@ async function handleSend() {
 
 
 // ======================================================
-// BUTTON + ENTER
+// SEND BUTTON
 // ======================================================
 
 sendBtn.onclick =
   handleSend;
 
 
+// ENTER KEY
 inputEl.addEventListener(
   "keydown",
-  (e) => {
+  function (e) {
 
     if (
-      e.key === "Enter" &&
+
+      e.key ===
+      "Enter" &&
+
       !e.shiftKey
+
     ) {
 
       e.preventDefault();
@@ -609,36 +691,7 @@ inputEl.addEventListener(
     }
 
   }
-
 );
-
-
-// ======================================================
-// BACKEND STATUS
-// ======================================================
-
-function setBackendStatus(status) {
-
-  backendConnected =
-    status;
-
-
-  inputEl.disabled =
-    !status;
-
-
-  sendBtn.disabled =
-    !status;
-
-
-  inputEl.placeholder =
-    status
-
-      ? "Ask whatever you want..."
-
-      : "BOTMEN offline ⚠️";
-
-}
 
 
 // ======================================================
@@ -648,7 +701,9 @@ function setBackendStatus(status) {
 renderChats();
 
 
-if (activeChat) {
+if (
+  activeChat
+) {
 
   loadChatMessages();
 
@@ -657,6 +712,3 @@ if (activeChat) {
 
 newChatBtn.onclick =
   createChat;
-
-
-setBackendStatus(true);
