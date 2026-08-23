@@ -130,13 +130,9 @@ function addMessage(text, sender, save = true) {
 async function handleSend() {
   const text = inputEl.value.trim();
 
-  if (!text) {
-    return;
-  }
+  if (!text) return;
 
-  if (!activeChat) {
-    createChat();
-  }
+  if (!activeChat) createChat();
 
   // USER MESSAGE
   addMessage(text, "user");
@@ -146,12 +142,11 @@ async function handleSend() {
   const thinkingMessage = addMessage("Thinking... 🤔", "bot");
 
   try {
-    // Direct Single POST Request to FastAPI /generate endpoint
     const response = await fetch(backendURL + "/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "69420" // Bypass Ngrok warning page
+        "bypass-tunnel-reminder": "true" // 👈 Localtunnel warning page bypass karne ke liye
       },
       body: JSON.stringify({
         prompt: text,
@@ -167,9 +162,7 @@ async function handleSend() {
     const data = await response.json();
     const reply = data.response;
 
-    if (!reply) {
-      throw new Error("Response khali aaya hai");
-    }
+    if (!reply) throw new Error("Response khali aaya hai");
 
     // UPDATE UI WITH AI RESPONSE
     thinkingMessage.querySelector(".bubble").textContent = reply;
