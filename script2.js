@@ -9,7 +9,7 @@ const newChatBtn = document.getElementById("newChatBtn");
 // ======================================================
 // BOTMEN NGROK BACKEND URL (LIVE)
 // ======================================================
-const backendURL = "https://swan-corporate-occupy.ngrok-free.dev";
+const backendURL = "https://rotten-bags-create.loca.lt";
 
 // ======================================================
 // LOCAL CHAT DATA
