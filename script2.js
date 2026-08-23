@@ -7,9 +7,9 @@ const chatsList = document.getElementById("chatsList");
 const newChatBtn = document.getElementById("newChatBtn");
 
 // ======================================================
-// BOTMEN NGROK BACKEND URL (LIVE)
+// BOTMEN SERVEO BACKEND URL (LIVE)
 // ======================================================
-const backendURL = "https://rotten-bags-create.loca.lt";
+const backendURL = "https://4b99d38526d7f3c9-35-247-183-249.serveusercontent.com";
 
 // ======================================================
 // LOCAL CHAT DATA
@@ -125,7 +125,7 @@ function addMessage(text, sender, save = true) {
 }
 
 // ======================================================
-// SEND MESSAGE (Updated for FastAPI Backend)
+// SEND MESSAGE (Updated for Serveo & Flask Backend)
 // ======================================================
 async function handleSend() {
   const text = inputEl.value.trim();
@@ -145,8 +145,7 @@ async function handleSend() {
     const response = await fetch(backendURL + "/generate", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "bypass-tunnel-reminder": "true" // 👈 Localtunnel warning page bypass karne ke liye
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         prompt: text,
