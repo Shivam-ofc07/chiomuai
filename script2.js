@@ -7,19 +7,13 @@ const chatsList = document.getElementById("chatsList");
 const newChatBtn = document.getElementById("newChatBtn");
 
 // ======================================================
-// BOTMEN SERVEO BACKEND URL (LIVE)
+// BOTMEN NGROK BACKEND URL (LIVE)
 // ======================================================
-const backendURL = "https://4b99d38526d7f3c9-35-247-183-249.serveusercontent.com";
+const backendURL = "https://swan-corporate-occupy.ngrok-free.dev"; // 👈 Yahan Naya Ngrok URL Dalein
 
-// ======================================================
-// LOCAL CHAT DATA
-// ======================================================
 let chats = JSON.parse(localStorage.getItem("sparkmind_chats")) || {};
 let activeChat = localStorage.getItem("sparkmind_active") || null;
 
-// ======================================================
-// MENU TOGGLE
-// ======================================================
 menuBtn.addEventListener("click", function (e) {
   e.stopPropagation();
   leftPanel.classList.toggle("collapsed");
@@ -36,59 +30,39 @@ document.addEventListener("click", function (e) {
   }
 });
 
-// ======================================================
-// RENDER CHATS
-// ======================================================
 function renderChats() {
   chatsList.innerHTML = "";
-
   Object.keys(chats).forEach(function (name) {
     const div = document.createElement("div");
     div.className = "chat-item";
     div.textContent = name;
-
-    if (name === activeChat) {
-      div.classList.add("active");
-    }
-
+    if (name === activeChat) div.classList.add("active");
     div.onclick = function () {
       activeChat = name;
       localStorage.setItem("sparkmind_active", activeChat);
       renderChats();
       loadChatMessages();
     };
-
     chatsList.appendChild(div);
   });
 }
 
-// ======================================================
-// CREATE CHAT
-// ======================================================
 function createChat() {
   const newName = "Chat " + (Object.keys(chats).length + 1);
   chats[newName] = [];
   activeChat = newName;
-
   saveChats();
   renderChats();
   loadChatMessages();
 }
 
-// ======================================================
-// SAVE CHAT
-// ======================================================
 function saveChats() {
   localStorage.setItem("sparkmind_chats", JSON.stringify(chats));
   localStorage.setItem("sparkmind_active", activeChat);
 }
 
-// ======================================================
-// LOAD CHAT
-// ======================================================
 function loadChatMessages() {
   chatArea.innerHTML = "";
-
   if (activeChat && chats[activeChat]) {
     chats[activeChat].forEach(function (message) {
       addMessage(message.text, message.sender, false);
@@ -96,56 +70,38 @@ function loadChatMessages() {
   }
 }
 
-// ======================================================
-// ADD MESSAGE
-// ======================================================
 function addMessage(text, sender, save = true) {
   const message = document.createElement("div");
   message.className = "message " + sender;
-
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.textContent = text;
-
   message.appendChild(bubble);
   chatArea.appendChild(message);
-
   chatArea.scrollTop = chatArea.scrollHeight;
 
   if (save && activeChat) {
-    chats[activeChat].push({
-      text: text,
-      sender: sender
-    });
-
+    chats[activeChat].push({ text: text, sender: sender });
     saveChats();
   }
-
   return message;
 }
 
-// ======================================================
-// SEND MESSAGE (Updated for Serveo & Flask Backend)
-// ======================================================
 async function handleSend() {
   const text = inputEl.value.trim();
-
   if (!text) return;
-
   if (!activeChat) createChat();
 
-  // USER MESSAGE
   addMessage(text, "user");
   inputEl.value = "";
-
-  // THINKING MESSAGE
   const thinkingMessage = addMessage("Thinking... 🤔", "bot");
 
   try {
     const response = await fetch(backendURL + "/generate", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true" // 👈 Ngrok bypass header
       },
       body: JSON.stringify({
         prompt: text,
@@ -163,18 +119,14 @@ async function handleSend() {
 
     if (!reply) throw new Error("Response khali aaya hai");
 
-    // UPDATE UI WITH AI RESPONSE
     thinkingMessage.querySelector(".bubble").textContent = reply;
 
-    // SAVE TO LOCAL STORAGE
     const chatArray = chats[activeChat];
     const lastIndex = chatArray.length - 1;
-
     if (chatArray[lastIndex] && chatArray[lastIndex].sender === "bot") {
       chatArray[lastIndex].text = reply;
       saveChats();
     }
-
     chatArea.scrollTop = chatArea.scrollHeight;
 
   } catch (error) {
@@ -184,11 +136,7 @@ async function handleSend() {
   }
 }
 
-// ======================================================
-// EVENT LISTENERS & INITIALIZATION
-// ======================================================
 sendBtn.onclick = handleSend;
-
 inputEl.addEventListener("keydown", function (e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -197,9 +145,5 @@ inputEl.addEventListener("keydown", function (e) {
 });
 
 renderChats();
-
-if (activeChat) {
-  loadChatMessages();
-}
-
+if (activeChat) loadChatMessages();
 newChatBtn.onclick = createChat;
